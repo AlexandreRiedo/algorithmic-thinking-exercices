@@ -12,8 +12,8 @@ def solve():
         string_counts[current_string] += 1
 
     for string in strings:
-        if string_counts[string] == 1:
-            if string_counts.get("!" + string, 0) == 1:
+        if string_counts[string] >= 1:
+            if string_counts.get("!" + string, 0) >= 1:
                 return string
     return "satisfiable"
 
