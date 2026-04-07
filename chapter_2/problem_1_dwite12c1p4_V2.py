@@ -1,10 +1,12 @@
-NUM_TEST = 2
+NUM_TEST = 1
 
 
 class Tree:
-    def __init__(self, left, right) -> None:
-        self.left: int | Tree | None = left
-        self.right: int | Tree | None = right
+    def __init__(self, left, right, value, parent) -> None:
+        self.left: Tree | None = left
+        self.right: Tree | None = right
+        self.value: int | None = value
+        self.parent: Tree | None = parent
 
 
 def find_left_tree_end(str_tree):
@@ -33,29 +35,28 @@ def find_right_tree_start(str_tree):
 
 def parse_tree(parent_tree: Tree, str_tree: str):
     if str_tree[1] != "(":
-        parent_tree.left = int(str_tree[1:3])
+        parent_tree.left = Tree(None, None, int(str_tree[1:3]), parent_tree.left)
     else:
-        parent_tree.left = Tree(None, None)
+        parent_tree.left = Tree(None, None, None, parent_tree)
         parse_tree(parent_tree.left, str_tree[1 : find_left_tree_end(str_tree) + 1])
 
     if str_tree[-2] != ")":
-        parent_tree.right = int(str_tree[-3:-1])
+        parent_tree.right = Tree(None, None, int(str_tree[-3:-1]), parent_tree.right)
     else:
-        parent_tree.right = Tree(None, None)
-        parse_tree(parent_tree.right, str_tree[find_right_tree_start(str_tree) : - 1])
+        parent_tree.right = Tree(None, None, None, parent_tree)
+        parse_tree(parent_tree.right, str_tree[find_right_tree_start(str_tree) : -1])
 
 
 for _ in range(NUM_TEST):
     str_input = input()
-    sum_candy = sum(
-        int(digit)
-        for digit in str_input.replace("(", "").replace(")", "").replace(" ", "")
-    )
-
 
 """
 ((1 (2 3)) (10 12))
 (2 ((4 6) (7 8)))
 
 (1 (2 3))
+((1 2) 3)
+
+((1 5) 8)
+(1 3)
 """
