@@ -13,28 +13,31 @@ with open("assign.in") as file:
 
         insort(
             relationships,
-            (rel_type, min(cow1, cow2), max(cow1, cow2)),
-            key=lambda x: (x[1], x[2]),
+            (
+                min(cow1, cow2),
+                max(cow1, cow2),
+                rel_type,
+            ),
         )
 
 for rel in relationships:
-    if rel[0] == "S":
+    if rel[2] == "S":
         for i, same_breed_set in enumerate(same_breeds):
-            if rel[1] in same_breed_set or rel[2] in same_breed_set:
+            if rel[0] in same_breed_set or rel[1] in same_breed_set:
+                same_breed_set.add(rel[0])
                 same_breed_set.add(rel[1])
-                same_breed_set.add(rel[2])
                 break
         else:
-            same_breeds.append({rel[1], rel[2]})
+            same_breeds.append({rel[0], rel[1]})
 
-    if rel[0] == "D":
+    if rel[2] == "D":
         for i, different_breed_set in enumerate(different_breeds):
-            if rel[1] in different_breed_set or rel[2] in different_breed_set:
+            if rel[0] in different_breed_set or rel[1] in different_breed_set:
+                different_breed_set.add(rel[0])
                 different_breed_set.add(rel[1])
-                different_breed_set.add(rel[2])
                 break
         else:
-            different_breeds.append({rel[1], rel[2]})
+            different_breeds.append({rel[0], rel[1]})
 
 # print(same_breeds)
 # print(different_breeds)
