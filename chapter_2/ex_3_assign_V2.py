@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from rich import print as rprint
 
@@ -6,8 +6,8 @@ from rich import print as rprint
 @dataclass(slots=True)
 class Cow:
     position: int
-    same_breed: "set[Cow]"
-    different_breed: "set[Cow]"
+    same_breed: "set[Cow]" = field(default_factory=set, compare=False)
+    different_breed: "set[Cow]" = field(default_factory=set, compare=False)
 
     def __repr__(self) -> str:
         return f"Cow=({self.position=} same_breed=({' '.join(str(cow.position) for cow in self.same_breed)}) different_breed=({' '.join(str(cow.position) for cow in self.different_breed)}))"
@@ -18,31 +18,22 @@ class Cow:
 
 with open("assign.in") as file:
     num_cows, num_relationships = map(int, file.readline().split())
-    cows_seen: dict[int, Cow] = {}
+    all_cows: dict[int, Cow] = {x: Cow(x, set(), set()) for x in range(1, num_cows + 1)}
 
     for line in file:
-        rel_type, cow1, cow2 = line.split()
-        cow1 = int(cow1)
-        cow2 = int(cow2)
+        rel_type, cow1_position, cow2_position = line.split()
+        cow1_position = int(cow1_position)
+        cow2_position = int(cow2_position)
 
-        if cow1 in cows_seen:
-            cow1 = cows_seen[cow1]
-        else:
-            cow1 = Cow(cow1, set(), set())
-            cows_seen[cow1.position] = cow1
-
-        if cow2 in cows_seen:
-            cow2 = cows_seen[cow2]
-        else:
-            cow2 = Cow(cow2, set(), set())
-            cows_seen[cow2.position] = cow2
+        cow1 = all_cows[cow1_position]
+        cow2 = all_cows[cow2_position]
 
         if rel_type == "S":
             cow1.same_breed.add(cow2)
             cow2.same_breed.add(cow1)
         elif rel_type == "D":
             cow1.different_breed.add(cow2)
-            cow2.different_breed.add(cow1)
+            # cow2.different_breed.add(cow1) # SUPER HACKEY WTF!!!
 
 
 def visit_all_same_breed(cow: Cow, visited: set[Cow]):
@@ -54,36 +45,60 @@ def visit_all_same_breed(cow: Cow, visited: set[Cow]):
             visit_all_same_breed(cow_neighbor, visited)
 
 
-def visit_all_different_breed(cow: Cow, visited: set[Cow]):
-    if len(cow.different_breed) == 0:
-        visited.add(cow)
-    else:
-        for cow_neighbor in cow.different_breed - visited:
-            visited.add(cow_neighbor)
-            visit_all_different_breed(cow_neighbor, visited)
+def visit_all_different_breed(cow_set: set[Cow]):
+    res = set()
+    for cow in cow_set:
+        res.update(cow.different_breed)
+    return res
 
 
-for cow in cows_seen.values():
-    rprint(cow)
-print("\n\n")
+# for cow in all_cows.values():
+#     rprint(cow)
+# print("\n\n")
 
-same_breeds_test: set[Cow] = set()
-visit_all_same_breed(cows_seen[3], same_breeds_test)
-rprint(same_breeds_test)
-print("\n\n")
+# same_breeds_test: set[Cow] = set()
+# visit_all_same_breed(all_cows[48], same_breeds_test)
+# rprint("SAME BREEDS")
+# rprint(same_breeds_test)
+# print("\n\n")
 
-different_breeds_test: set[Cow] = set()
-visit_all_different_breed(cows_seen[3], different_breeds_test)
-rprint(different_breeds_test)
-print("\n\n")
+# different_breeds_test = visit_all_different_breed(same_breeds_test)
+# rprint("DIFFERENT BREEDS FROM THE SAMEBREEDS ABOVE")
+# rprint(different_breeds_test)
+# print("\n\n")
 
 
-def solve(num_cows) -> int:
-    assignments = 0
-    for index in range(1, num_cows+1):
-        # curr_cow = cows_seen[]
-        pass
+def solve(num_cows, all_cows: dict[int, Cow]) -> int:
+    assignments = 1
+    visited_cows: set[Cow] = set()
+    for index in range(1, num_cows + 1):
+        curr_cow = all_cows[index]
+        curr_same_breeds: set[Cow] = set()
+        visit_all_same_breed(curr_cow, curr_same_breeds)
+        curr_different_breeds = visit_all_different_breed(curr_same_breeds)
+
+        rprint(f"{assignments=}")
+        rprint(f"{curr_cow=} {curr_same_breeds=} {curr_different_breeds=}")
+        if len(curr_different_breeds) >= 3:
+            return 0
+
+        if curr_cow in visited_cows:
+            continue
+        else:
+            visited_cows.update(curr_same_breeds)
+            rprint(f"{assignments * (3 - len(curr_different_breeds))=}")
+            rprint(f"{len(curr_different_breeds)=}")
+            assignments = assignments * (3 - len(curr_different_breeds))
+        rprint("")
     return assignments
+
+rprint(all_cows)
+
+print(solve(num_cows, all_cows))
+
+"""
+3 * (3 - 1) * 3 
+"""
 
 """
 S 1 2
@@ -110,4 +125,3 @@ IDEA: if len(different_breed) >= 3 for any cow, then return 0!
 for each same_breed_set/letter : 3 *
 if the letter has 1,2,3 different_breed: 2, 1, 0 (impossible)
 """
-
