@@ -34,3 +34,23 @@ def solve(pizza: list[int], ingredient: int) -> int:
 
 
 print(solve([], 0) + 1)
+
+
+### NB: Gemini's backtracking idea
+def solve_GEMINI(pizza: list[int], ingredient: int) -> int:
+    if ingredient >= num_ingredients:
+        return 0
+
+    total = 0
+    
+    # Branch 1: Include (if valid)
+    if is_valid_new_pizza(pizza, ingredient):
+        pizza.append(ingredient)         # 1. Add to the shared state
+        total += 1                       # Count this valid combination
+        total += solve(pizza, ingredient + 1)
+        pizza.pop()                      # 2. Backtrack! Remove it before the next branch
+
+    # Branch 2: Exclude
+    total += solve(pizza, ingredient + 1)
+
+    return total
