@@ -8,7 +8,11 @@ def calc_answer(buckets):
 
 
 def solve(
-    barn1_buckets: list, barn2_buckets: list, day: int = 0, picked=[], answers=set()
+    barn1_buckets: list,
+    barn2_buckets: list,
+    day: int,
+    picked: list,
+    answers: set,
 ):
     if day == 4:
         answers.add(calc_answer(picked))
@@ -41,3 +45,16 @@ with open("backforth.out", "w") as file:
     answers = set()
     solve(barn1_buckets, barn2_buckets, 0, [], answers)
     file.write(str((len(answers))))
+
+
+"""
+NOTE:
+On Monday, FJ can choose from 10 different buckets. 
+On Tuesday, he will be able to choose from 11 (no matter which bucket he brings); 
+on Wednesday, Thursday, and Friday, he will also have 11 choices. 
+
+Thus, a rough upper bound for the number of different things Farmer John can do is 10∗114=146410
+operations, which means we can just simulate them. 
+
+(A good rule of thumb is that if the number is under 20,000,000, it will probably run in time. This is *far* below that number!)
+"""
