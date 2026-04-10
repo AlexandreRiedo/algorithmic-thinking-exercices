@@ -10,20 +10,26 @@ def solve_k(
     num_schemes: int,
     unit_price: float,
     num_apples: int,
+    memo: list[float],
 ) -> float:
+    if memo[num_apples] != -1.0:
+        return memo[num_apples]
+
     if num_apples == 0:
-        return 0
+        memo[num_apples] = 0
+        return memo[num_apples]
     else:
-        result = solve_k(num, price, num_schemes, unit_price, num_apples - 1)
+        result = solve_k(num, price, num_schemes, unit_price, num_apples - 1, memo)
         best = result + unit_price
 
         for i in range(0, num_schemes):
             if num_apples - num[i] >= 0:
                 result = solve_k(
-                    num, price, num_schemes, unit_price, num_apples - num[i]
+                    num, price, num_schemes, unit_price, num_apples - num[i], memo
                 )
                 best = min(best, result + price[i])
-        return best
+        memo[num_apples] = best
+        return memo[num_apples]
 
 
 def solve(
@@ -32,10 +38,11 @@ def solve(
     num_schemes: int,
     unit_price: float,
     num_apples: int,
+    memo: list[float],
 ) -> float:
-    best = solve_k(num, price, num_schemes, unit_price, num_apples)
+    best = solve_k(num, price, num_schemes, unit_price, num_apples, memo)
     for i in range(num_apples + 1, SIZE):
-        best = min(best, solve_k(num, price, num_schemes, unit_price, i))
+        best = min(best, solve_k(num, price, num_schemes, unit_price, i, memo))
 
     return best
 
@@ -45,6 +52,7 @@ def main():
 
     num = [-1 for _ in range(MAX_SCHEMES)]
     price = [-1.0 for _ in range(MAX_SCHEMES)]
+    memo = [-1.0 for _ in range(SIZE)]
     test_case = 0
 
     idx = 0
@@ -63,9 +71,11 @@ def main():
             price[i] = float(price_scheme)
 
         sys.stdout.write(f"Case {test_case}:\n")
+        for i in range(0, SIZE):
+            memo[i] = -1.0
 
         for num_apples in map(int, input_data[idx].split()):
-            result = solve(num, price, num_schemes, unit_price, num_apples)
+            result = solve(num, price, num_schemes, unit_price, num_apples, memo)
             sys.stdout.write(f"Buy {num_apples} for ${result:.2f}\n")
         idx += 1
 
