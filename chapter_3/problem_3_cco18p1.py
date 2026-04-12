@@ -1,3 +1,6 @@
+from functools import lru_cache
+
+
 def calc_score(index_geese, index_hawks) -> int:
     if geese_outcomes[index_geese] == "W" and hawks_outcomes[index_hawks] == "L":
         if geese_scores[index_geese] > hawks_scores[index_hawks]:
@@ -13,23 +16,65 @@ def calc_score(index_geese, index_hawks) -> int:
         return 0
 
 
-def find_best(fixed_cursor, moving_cursor) -> int:
+def find_best_hawk(fixed_cursor, moving_cursor) -> int:
     best = 0
     for i in range(moving_cursor, num_games):
         best = max(best, calc_score(fixed_cursor, i))
     return best
 
 
+def find_best_geese(fixed_cursor, moving_cursor) -> int:
+    best = 0
+    for i in range(moving_cursor, num_games):
+        best = max(best, calc_score(i, fixed_cursor))
+    return best
+
+
+@lru_cache(maxsize=None)
 def solve(cursor_geese, cursor_hawks) -> int:
     if cursor_geese == num_games - 1:
-        return find_best(cursor_geese, cursor_hawks)
+        print("GEESE HERE")
+        return find_best_hawk(cursor_geese, cursor_hawks)
     elif cursor_hawks == num_games - 1:
-        return find_best(cursor_hawks, cursor_geese)
+        print("HAWK HERE")
+        return find_best_geese(cursor_hawks, cursor_geese)
 
-    for explore_hawks in range(cursor_hawks, num_games - 1):
-        pass
+    best = 0
+    for explore_geese in range(cursor_geese, num_games):
+        print(f"IN explore_geese, {explore_geese=} {cursor_geese=} {cursor_hawks=}")
+        if calc_score(explore_geese, cursor_hawks + 1) == 0:
+            continue
+        if explore_geese <= cursor_hawks + 1:
+            continue
 
-    return -666
+        prev_best = best
+        best = max(
+            best,
+            solve(explore_geese, cursor_hawks + 1)
+            + calc_score(explore_geese, cursor_hawks + 1),
+        )
+        if best != prev_best:
+            print(f"{best=} {prev_best=}")
+            print(f"{cursor_geese=} {cursor_hawks=} {explore_geese=}")
+
+    for explore_hawks in range(cursor_hawks, num_games):
+        print(f"IN explore_geese, {explore_hawks=} {cursor_geese=} {cursor_hawks=}")
+        if calc_score(cursor_geese + 1, explore_hawks) == 0:
+            continue
+        if explore_hawks <= cursor_geese + 1:
+            continue
+
+        prev_best = best
+        best = max(
+            best,
+            solve(cursor_geese + 1, explore_hawks)
+            + calc_score(cursor_geese + 1, explore_hawks),
+        )
+        if best != prev_best:
+            print(f"{best=} {prev_best=}")
+            print(f"{cursor_geese=} {cursor_hawks=} {explore_hawks=}")
+
+    return best
 
 
 num_games = int(input())
@@ -52,13 +97,13 @@ hawks_scores = list(map(int, input().split()))
 # rprint(f"{solve(num_games - 1, test_cursor_hawks)=}")
 
 # rprint("\n\n\n")
-# rprint(solve(num_games - 1, num_games - 1))
+print(solve(0, 0))
 
 """
 4
 WLLW
-1 2 3 40
-LLWL
+1 2 3 4
+LWWL
 6 5 3 2
 -> 14
 
@@ -91,5 +136,4 @@ IDEA:
 Recursion base case is when cursor_geese == 0 or cursor_hawks == 0.
 If so, return geese_scores[cursor_geese] + cursor_hawks[cursor_hawks] 
 OR 0 if no W/L combo.
-
 """
