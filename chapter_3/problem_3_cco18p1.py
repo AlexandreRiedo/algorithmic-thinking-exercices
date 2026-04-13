@@ -83,20 +83,6 @@ geese_scores = list(map(int, input().split()))
 hawks_outcomes = list(input())
 hawks_scores = list(map(int, input().split()))
 
-
-# TESTING
-# for cursor_geese in range(num_games):
-#     rprint("")
-#     for cursor_hawks in range(num_games):
-#         rprint(
-#             f"{cursor_geese=} {cursor_hawks=} {calc_score(cursor_geese, cursor_hawks)=}"
-#         )
-
-# test_cursor_hawks = random.randint(0, num_games - 1)
-# rprint(f"{test_cursor_hawks=}")
-# rprint(f"{solve(num_games - 1, test_cursor_hawks)=}")
-
-# rprint("\n\n\n")
 print(solve(0, 0))
 
 """
