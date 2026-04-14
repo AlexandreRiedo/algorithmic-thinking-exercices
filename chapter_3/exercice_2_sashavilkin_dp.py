@@ -1,3 +1,4 @@
+import sys
 from math import inf
 
 
@@ -15,20 +16,18 @@ def calc_fullness(start_index: int, end_index: int, nutritions: list[int]) -> in
     return res
 
 
-num_meals = int(input())
-nutritions = [0] + [int(item) for item in input().split()]
-current = [-inf for _ in range(num_meals + 1)]
-previous = [-inf for _ in range(num_meals + 1)]
-pre_previous = [-inf for _ in range(num_meals + 1)]
+num_meals = int(sys.stdin.readline().strip())
+nutritions = [0] + [int(item) for item in sys.stdin.readline().strip().split()]
+current = [(-inf, -inf) for _ in range(num_meals + 1)]
+previous = [(-inf, -inf) for _ in range(num_meals + 1)]
 
 
 def solve(
     start_index: int,
     end_index: int,
     nutritions: list[int],
-    current: list[float],
-    previous: list[float],
-    pre_previous: list[float],
+    current: list[tuple[float, float]],
+    previous: list[tuple[float, float]],
 ) -> float:
     for i in range(end_index, start_index - 1, -1):
         # Filling in the "current" row
@@ -38,24 +37,28 @@ def solve(
             # rprint(f"{pre_previous=}")
             # rprint("")
             if i == j:
-                current[j] = nutritions[i]
+                current[j] = (nutritions[i], nutritions[i])
             else:
-                first = previous[j]
-                second = current[j - 1]
-                third = calc_fullness(i, j, nutritions) # This needs to be better
-                current[j] = max(first, second, third)
+                first = previous[j][0]
+                second = current[j - 1][0]
+                if (j - i) % 2 == 0:
+                    third = current[j - 1][1] + nutritions[j]
+                else:
+                    third = current[j - 1][1] - nutritions[j]
+                # third = calc_fullness(i, j, nutritions)
+                current[j] = (max(first, second, third), third)
 
         # Updating the previous rows to reuse in the calculations for the next row
-        for k, value in enumerate(previous):
-            pre_previous[k] = value
-        for k, value in enumerate(current):
-            previous[k] = value
+        previous[:] = current
 
-    return current[end_index]
+    return current[end_index][0]
 
 
-print(max(solve(1, num_meals, nutritions, current, previous, pre_previous), 0))
+sys.stdout.write(f"{max(solve(1, num_meals, nutritions, current, previous), 0)}\n")
 
+"""
+3 2 10 5 8 1 6 4 9 7
+"""
 
 """
 NB DP array:
